@@ -294,6 +294,8 @@ function handleEnter() {
   min-height: 100vh;
   background: #fff;
   transition: width 0.2s ease;
+
+  flex-shrink: 0;
 }
 
 /* Collapsed = only icons are visible, labels are hidden */

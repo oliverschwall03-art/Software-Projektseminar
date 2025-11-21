@@ -26,4 +26,10 @@ import SideNav from '@/components/SideNav.vue'
 
 /* Ensure body has no unexpected scroll gaps in some browsers */
 html, body, #app { height: 100%; margin: 0; }
+
+.main {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+}
 </style>
