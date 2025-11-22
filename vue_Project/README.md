@@ -35,3 +35,21 @@ npm run dev
 ```sh
 npm run build
 ```
+## Security Notice
+
+This project uses the **SheetJS (xlsx)** library to support Excel import and export functionality.  
+According to `npm audit`, the current version of `xlsx` has the following known vulnerabilities:
+
+- **Prototype Pollution** (GHSA-4r6h-8v6p-xvw6)
+- **Regular Expression Denial of Service (ReDoS)** (GHSA-5pgg-2g8v-p4x9)
+- **No fixed version is currently available**
+
+### Why the dependency is still used
+- This project runs **entirely in the frontend (browser)**
+- No **untrusted or user-uploaded** Excel files are processed
+- The project is intended for coursework / internal use
+- The vulnerabilities are mainly exploitable in **Node.js backend environments**,  
+  not in browser-based frontend applications.
+
+Given the limited attack surface and usage scope, the practical risk for this project is **very low**.  
+The dependency can be updated once a patched version becomes available.
