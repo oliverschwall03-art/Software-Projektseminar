@@ -485,7 +485,7 @@ const phasePoints = computed(() => {
 })
 
 // Chart rating range (1–5)
-const minRating = 1
+const minRating = 0
 const maxRating = 5
 
 // Chart coordinate system boundaries inside the SVG
@@ -498,7 +498,6 @@ function scaleX(value) {
   return plotX.min + t * (plotX.max - plotX.min)
 }
 
-// Convert rating (1–5) to Y coordinate
 function scaleY(value) {
   const t = (value - minRating) / (maxRating - minRating)
   return plotY.max - t * (plotY.max - plotY.min)
