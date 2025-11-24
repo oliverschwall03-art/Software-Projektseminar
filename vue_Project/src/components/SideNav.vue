@@ -74,6 +74,14 @@
                 placeholder="Enter project name"
                 @keyup.enter="handleEnter"
               />
+              <label class="form-label mt-3">Number of Phases</label>
+              <input
+                type="number"
+                class="form-control"
+                v-model.number="newPhaseCount"
+                min="1"
+                placeholder="e.g. 3"
+              />
             </div>
 
             <!-- Modal footer with Cancel + OK -->
@@ -198,56 +206,37 @@
 </template>
 
 <script setup>
-/*
-  SCRIPT SECTION
-  ==============
-  Controls:
-  - sidebar collapsed state
-  - which menu item is active
-  - which project submenu is open
-  - create-new-project modal behavior
-*/
-
 import { ref, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useProjectsStore } from '@/stores/projects'
 
-// Current route (used to highlight active links and detect project views)
 const route = useRoute()
-
-// Pinia store for projects
 const store = useProjectsStore()
 const { projects } = storeToRefs(store)
 
-// Whether the "Projects" submenu is open or not
-// Initially open if we're on a project-related route
 const isProjectsOpen = ref(route.name === 'project-detail' || route.name === 'projects')
-
-// Whether the entire sidebar is collapsed (icon-only mode)
 const isCollapsed = ref(false)
 
-// Modal-related refs
-const newProjectName = ref('')  // user input for new project name
-const modalEl = ref(null)       // reference to the modal DOM element
-const okButtonEl = ref(null)    // reference to the OK button in the modal
+const newProjectName = ref('')
+const newPhaseCount = ref(null)
+
+const modalEl = ref(null)
+const okButtonEl = ref(null)
 
 onMounted(() => {
-  // Collapse sidebar by default on smaller screens
   if (window.innerWidth < 992) {
     isCollapsed.value = true
   }
 
-  // When the modal is shown, reset the input and focus the text field
   modalEl.value?.addEventListener('shown.bs.modal', () => {
     newProjectName.value = ''
+    newPhaseCount.value = null
     const input = document.getElementById('projectNameInput')
     input && input.focus()
   })
 })
 
-// Watch the route and automatically open/close the project submenu
-// based on whether we are on a project-related route.
 watch(
   () => route.name,
   (name) => {
@@ -255,37 +244,39 @@ watch(
   }
 )
 
-// Helper to compute classes for top-level navigation links
 const linkClass = (name) =>
   route.name === name ? 'active fw-semibold text-primary' : 'text-body-secondary'
 
-// Check if a given project ID matches the currently active project route
 const isActiveProject = (id) =>
   route.name === 'project-detail' && route.params.id === id
 
-// Create a new project when user confirms in the modal
 function confirmCreate() {
   const name = newProjectName.value.trim()
-  if (!name) return
+  const phases = parseInt(newPhaseCount.value)
 
-  // Generate a simple project ID like "P001", "P002", ...
+  if (!name || isNaN(phases) || phases <= 0) {
+    alert('Please enter a project name and a valid number of phases.')
+    return
+  }
+
   const id = 'P' + (store.projects.length + 1).toString().padStart(3, '0')
 
-  // Add to Pinia project store
-  store.addProject({ id, name })
+  store.addProject({
+    id,
+    name,
+    phaseCount: phases
+  })
 
-  // Reset the input field for the next time
   newProjectName.value = ''
+  newPhaseCount.value = null
 }
 
-// Handle Enter key inside the project name input
-// Behaves like clicking the OK button (which triggers confirmCreate
-// and also has data-bs-dismiss to close the modal)
 function handleEnter() {
   if (!newProjectName.value.trim()) return
   okButtonEl.value?.click()
 }
 </script>
+
 
 <style scoped>
 /* Base sidebar styling */

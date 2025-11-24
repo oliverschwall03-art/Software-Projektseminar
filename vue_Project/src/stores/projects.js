@@ -72,7 +72,12 @@ export const useProjectsStore = defineStore('projects', {
       const name = payload.name || 'New Project'
 
       // New project object
-      const p = { id, name }
+      const p = {
+        id,
+        name,
+        ...payload
+      }
+
 
       // Add to the reactive projects array
       this.projects.push(p)

@@ -126,9 +126,10 @@
       </div>
 
       <!-- RIGHT DIAGRAM -->
-      <div class="gantt-diagram">
+      <div class="gantt-diagram" :class="'zoom-' + zoom">
 
-        <!-- TODAY MARKER -->
+
+      <!-- TODAY MARKER -->
         <div
           v-if="todayMarker.visible"
           class="today-marker"
@@ -242,16 +243,24 @@ const { projects } = storeToRefs(store)
 const project = computed(() => projects.value.find(p => p.id === route.params.id))
 
 /* INIT PHASES */
+/* INIT PHASES based on phaseCount */
 watch(project, p => {
   if (!p) return
+  const count = p.phaseCount || 1
   if (!p.phases) p.phases = []
-  for (let i = 1; i <= 4; i++) {
+
+  for (let i = 1; i <= count; i++) {
     if (!p.phases.find(x => x.index === i)) {
       p.phases.push({ index: i, tasks: [] })
     }
   }
+
+  // optional: old phases delete if too many
+  p.phases = p.phases.filter(x => x.index <= count)
+
   p.phases.sort((a, b) => a.index - b.index)
 }, { immediate: true })
+
 
 /* MODAL / ADD / EDIT */
 const taskModalEl = ref(null)
@@ -587,22 +596,40 @@ const month = d => d.toLocaleString("en-US",{month:"short"})
 
 
 <style scoped>
-.planning-view { background:#f8f9fa; }
-
-.gantt-wrapper { display:flex; background:white; border-radius:8px; overflow:hidden; }
-
-/* Tabelle links */
-.task-table { width:480px; border-right:1px solid #ddd; }
-.task-header, .task-row {
-  display:grid;
-  grid-template-columns: 170px 80px 50px 90px 90px;
-  height:42px;
-  align-items:center;
-  padding:0 12px;
+.planning-view {
+  background: #f8f9fa;
 }
-.phase-row { background:#e6edfa; padding:10px 12px; font-weight:600; }
 
-/* klickbare Zeilen im Edit/Delete-Mode */
+.gantt-wrapper {
+  display: flex;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Left table */
+.task-table {
+  width: 480px;
+  border-right: 1px solid #ddd;
+  flex-shrink: 0;
+}
+
+.task-header,
+.task-row {
+  display: grid;
+  grid-template-columns: 170px 80px 50px 90px 90px;
+  height: 42px;
+  align-items: center;
+  padding: 0 12px;
+}
+
+.phase-row {
+  background: #e6edfa;
+  padding: 10px 12px;
+  font-weight: 600;
+}
+
+/* clickable rows */
 .row-selectable {
   cursor: pointer;
 }
@@ -610,53 +637,91 @@ const month = d => d.toLocaleString("en-US",{month:"short"})
   background-color: #eef3ff;
 }
 
+/* Gantt diagram */
 .gantt-diagram {
-  flex:1;
-  overflow:hidden;
-  position:relative;
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
-.timeline { display:flex; height:52px; border-bottom:2px solid #ddd; }
+
+/* timeline header */
+.timeline {
+  display: flex;
+  height: 52px;
+  border-bottom: 2px solid #ddd;
+  width: 100%;
+}
+
+/* each timeline cell dynamically adjusts */
 .tcell {
-  flex:1;
-  text-align:center;
-  padding-top:4px;
-  min-width:32px;
+  flex: 1;
+  text-align: center;
+  padding-top: 4px;
+  min-width: 0; /* prevents overflow */
 }
-.d{font-weight:700;} .m{font-size:.7rem;opacity:.7;}
 
-.row-spacer { height:42px; border-bottom:1px solid #eee; }
+.d {
+  font-weight: 700;
+}
+.m {
+  font-size: 0.7rem;
+  opacity: 0.7;
+}
 
-.gantt-row { height:42px; position:relative; display:flex; border-bottom:1px solid #f0f0f0; }
-.gcell { flex:1; border-right:1px solid #f5f5f5; }
+/* rows */
+.rows {
+  flex: 1;
+  width: 100%;
+}
+.row-spacer {
+  height: 42px;
+  border-bottom: 1px solid #eee;
+}
 
+.gantt-row {
+  height: 42px;
+  position: relative;
+  display: flex;
+  width: 100%;
+  border-bottom: 1px solid #f0f0f0;
+}
 
-/* TODAY-BALKEN */
+.gcell {
+  flex: 1;
+  border-right: 1px solid #f5f5f5;
+}
+
+/* Today marker */
 .today-marker {
-  position:absolute;
-  top:52px;           /* unter der Timeline */
-  bottom:0;
-  border-left:2px dashed #dc3545;
-  pointer-events:none;
-  z-index:2;
+  position: absolute;
+  top: 52px;
+  bottom: 0;
+  border-left: 2px dashed #dc3545;
+  pointer-events: none;
+  z-index: 2;
 }
 
-/* aktiver Zoom-Button */
+/* active zoom button */
 .btn-group .btn.active {
-  color:#fff;
-  background-color:#0d6efd;
-  border-color:#0d6efd;
+  color: #fff;
+  background-color: #0d6efd;
+  border-color: #0d6efd;
 }
 
+/* Custom range input */
 .custom-range input {
-  font-size: .75rem;
+  font-size: 0.75rem;
   padding: 0.15rem 0.25rem;
 }
 
+/* task bar */
 .bar {
   position: absolute;
   top: 8px;
   bottom: 8px;
-  background: #fbbf24;        /* yellow base bar */
+  background: #fbbf24;
   border-radius: 10px;
   text-align: center;
   display: flex;
@@ -666,10 +731,10 @@ const month = d => d.toLocaleString("en-US",{month:"short"})
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  z-index: 1;                 /* base layer for the whole bar */
+  z-index: 1;
 }
 
-/* grey completed part */
+/* grey progress part */
 .bar-progress {
   position: absolute;
   left: 0;
@@ -678,19 +743,15 @@ const month = d => d.toLocaleString("en-US",{month:"short"})
   background: #adb5bd;
   border-radius: 10px 0 0 10px;
   width: 0%;
-  z-index: 2;                 /* above yellow background, below text */
+  z-index: 2;
   pointer-events: none;
 }
 
-/* percent text */
+/* bar text */
 .bar-label {
   position: relative;
-  z-index: 3;                 /* always on top of grey + yellow */
+  z-index: 3;
   color: #000;
 }
-
-
-
-
-
 </style>
+
