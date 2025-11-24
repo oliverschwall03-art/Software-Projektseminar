@@ -323,13 +323,29 @@
           <div class="col-3">Social Capabilities</div>
         </div>
 
-        <!-- Placeholder rows (values will be added later) -->
-        <div class="row small">
-          <div class="col-3"></div>
-          <div class="col-3"></div>
-          <div class="col-3"></div>
-          <div class="col-3"></div>
+        <div v-if="catForPhase(phase.index) !== 'reasonable'" class="row small">
+          <div class="col-3">
+            <ul><li v-for="s in skillList(phase.index, 'personal')" :key="s">{{ s }}</li></ul>
+          </div>
+          <div class="col-3">
+            <ul><li v-for="s in skillList(phase.index, 'professional')" :key="s">{{ s }}</li></ul>
+          </div>
+          <div class="col-3">
+            <ul><li v-for="s in skillList(phase.index, 'methodical')" :key="s">{{ s }}</li></ul>
+          </div>
+          <div class="col-3">
+            <ul><li v-for="s in skillList(phase.index, 'social')" :key="s">{{ s }}</li></ul>
+          </div>
         </div>
+
+        <div v-else class="row small text-center text-muted">
+          <div class="col-3">Project reasonable?</div>
+          <div class="col-3">Project reasonable?</div>
+          <div class="col-3">Project reasonable?</div>
+          <div class="col-3">Project reasonable?</div>
+        </div>
+
+
       </div>
 
     </section>
@@ -354,6 +370,9 @@ import { useRoute } from "vue-router"
 // Pinia store (projects)
 import { useProjectsStore } from "@/stores/projects"
 import { storeToRefs } from "pinia"
+
+import skillOverview from "@/data/skill-overview.json"
+
 
 
 // ROUTE + STORE SETUP ===================================================
@@ -457,15 +476,12 @@ function formatAvg(arr) {
 // Convert the average exploration/exploitation ratings into chart points
 const phasePoints = computed(() => {
   if (!project.value?.phases) return []
-
-  return project.value.phases
-    .map(phase => {
-      const x = avg(phase.ambiRatingsLeft)
-      const y = avg(phase.ambiRatingsRight)
-      if (x === null || y === null) return null
-      return { index: phase.index, x, y }
-    })
-    .filter(Boolean)
+  return project.value.phases.map(phase => {
+    const x = avg(phase.ambiRatingsLeft)
+    const y = avg(phase.ambiRatingsRight)
+    const cat = skillCategory(x, y)
+    return { index: phase.index, x, y, category: cat }
+  })
 })
 
 // Chart rating range (1–5)
@@ -497,6 +513,25 @@ const plannedDaysSum = computed(() => {
     0
   )
 })
+
+function skillCategory(leftAvg, rightAvg) {
+  if (leftAvg < 2.5 && rightAvg >= 2.5) return "exploitative"
+  if (leftAvg < 2.5 && rightAvg < 2.5) return "reasonable"
+  if (leftAvg >= 2.5 && rightAvg >= 2.5) return "ambidextrous"
+  if (leftAvg >= 2.5 && rightAvg < 2.5) return "explorative"
+}
+
+function catForPhase(index) {
+  const point = phasePoints.value.find(p => p.index === index)
+  return point?.category || "reasonable"
+}
+
+function skillList(index, type) {
+  const cat = catForPhase(index)
+  if (cat === "reasonable") return []
+  return skillOverview[cat]?.[type] || []
+}
+
 </script>
 
 
@@ -590,4 +625,10 @@ const plannedDaysSum = computed(() => {
 .form-control-sm {
   font-size: 0.875rem;
 }
+
+.capabilities-box .fw-semibold.text-center {
+  text-align: left !important;
+  padding-left: 1.25rem;
+}
+
 </style>
