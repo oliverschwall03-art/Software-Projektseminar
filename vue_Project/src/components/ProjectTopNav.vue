@@ -1,18 +1,13 @@
 <template>
   <!--
     Top navigation bar shown on all project-related pages.
-    It contains 3 navigation tabs (Overview, Planning, Ambidexterity)
+    It contains 4 navigation tabs (Overview, Planning, Ambidexterity, Settings)
     and displays the project name on the right side.
   -->
   <nav class="project-topnav border-bottom mb-3">
     <div class="d-flex justify-content-between align-items-center">
 
-      <!--
-        LEFT SIDE: Navigation Tabs
-        ---------------------------
-        Each tab links to a different sub-page of the selected project.
-        Vue Router will highlight the active tab based on the current route.
-      -->
+
       <ul class="nav nav-pills">
 
         <!-- Overview Tab -->
@@ -51,14 +46,21 @@
           </RouterLink>
         </li>
 
+        <!-- Settings Tab -->
+        <li class="nav-item">
+          <RouterLink
+            class="nav-link"
+            :class="{ active: route.name === 'project-settings' }"
+            :to="{ name: 'project-settings', params: { id: projectId } }"
+          >
+            <i class="bi bi-gear me-1"></i>
+            Settings
+          </RouterLink>
+        </li>
+
       </ul>
 
-      <!--
-        RIGHT SIDE: Project Name Display
-        --------------------------------
-        Shows the name of the current project.
-        The project information is dynamically loaded from the Pinia store.
-      -->
+      <!-- RIGHT SIDE: Project Name -->
       <div class="project-name text-end">
         <span class="project-prefix">Project:</span>
         <span class="project-title">{{ project?.name || 'Unnamed project' }}</span>
@@ -69,16 +71,6 @@
 </template>
 
 <script setup>
-/*
-  SCRIPT SECTION
-  ===============
-  This section retrieves the currently active project using:
-  - the incoming projectId prop
-  - the Pinia project store
-
-  It also reads the current route to determine which tab is active.
-*/
-
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useProjectsStore } from '@/stores/projects'
@@ -99,7 +91,6 @@ const project = computed(() =>
 </script>
 
 <style scoped>
-
 .project-topnav {
   background: #fff;
   border-radius: 0.5rem;
@@ -121,14 +112,14 @@ const project = computed(() =>
   color: var(--bs-primary);
 }
 
-/* Active tab (when it's the current route) */
+/* Active tab */
 .nav-pills .nav-link.active {
   background-color: var(--bs-primary);
   color: #fff;
   font-weight: 600;
 }
 
-/* Container for the project name on the right side */
+/* Project name on the right */
 .project-name {
   display: flex;
   flex-direction: row;
@@ -136,14 +127,12 @@ const project = computed(() =>
   gap: 0.4rem;
 }
 
-/* Smaller "Project:" prefix */
 .project-prefix {
   font-size: 0.85rem;
   color: #6c757d;
   font-weight: 500;
 }
 
-/* Main project title (larger and bold) */
 .project-title {
   font-size: 1.1rem;
   font-weight: 700;
@@ -151,7 +140,6 @@ const project = computed(() =>
   white-space: nowrap;
   max-width: 260px;
   overflow: hidden;
-  text-overflow: ellipsis; /* Prevent long names from overflowing */
+  text-overflow: ellipsis;
 }
-
 </style>

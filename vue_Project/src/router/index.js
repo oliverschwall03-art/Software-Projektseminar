@@ -15,6 +15,7 @@ const ProjectDetailView    = () => import('@/views/project/ProjectDetailView.vue
 const ProjectOverview      = () => import('@/views/project/ProjectOverview.vue')
 const ProjectPlanning      = () => import('@/views/project/ProjectPlanning.vue')
 const ProjectAmbidexterity = () => import('@/views/project/ProjectAmbidexterity.vue')
+const ProjectSettings      = () => import('@/views/project/ProjectSettings.vue')
 
 /*
   Router configuration
@@ -74,6 +75,7 @@ export default createRouter({
 
         // Tab: Ambidexterity assessment page
         { path: 'ambidexterity', name: 'project-ambidexterity', component: ProjectAmbidexterity },
+        { path: '/project/:id/settings', name: 'project-settings', component: ProjectSettings },
       ],
     },
 
