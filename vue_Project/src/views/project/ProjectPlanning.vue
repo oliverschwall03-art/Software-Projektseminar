@@ -231,7 +231,7 @@
 
 
 <script setup>
-import { ref, computed, watch, onMounted } from "vue"
+import { ref, computed, onMounted } from "vue"
 import { useRoute } from "vue-router"
 import { useProjectsStore } from "@/stores/projects"
 import { storeToRefs } from "pinia"
@@ -241,26 +241,6 @@ const store = useProjectsStore()
 const { projects } = storeToRefs(store)
 
 const project = computed(() => projects.value.find(p => p.id === route.params.id))
-
-/* INIT PHASES */
-/* INIT PHASES based on phaseCount */
-watch(project, p => {
-  if (!p) return
-  const count = p.phaseCount || 1
-  if (!p.phases) p.phases = []
-
-  for (let i = 1; i <= count; i++) {
-    if (!p.phases.find(x => x.index === i)) {
-      p.phases.push({ index: i, tasks: [] })
-    }
-  }
-
-  // optional: old phases delete if too many
-  p.phases = p.phases.filter(x => x.index <= count)
-
-  p.phases.sort((a, b) => a.index - b.index)
-}, { immediate: true })
-
 
 /* MODAL / ADD / EDIT */
 const taskModalEl = ref(null)
