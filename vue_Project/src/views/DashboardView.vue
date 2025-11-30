@@ -232,9 +232,18 @@ const projectDaysMatrix = computed(() => {
 
   const rows = phases.map(phaseIndex => {
     const perProject = projs.map(p => {
-      const idx = phaseIndex - 1
-      if (!Array.isArray(p.plannedProjectDays)) return 0
-      const val = Number(p.plannedProjectDays[idx] ?? 0)
+      if (!Array.isArray(p.plannedProjectDays) || !Array.isArray(p.phases)) {
+        return 0
+      }
+
+      // Find the index of this phase inside THIS project's phases array
+      const phaseIdxInProject = p.phases.findIndex(ph => ph.index === phaseIndex)
+
+      // If the project doesn’t have this phase → treat PD as 0
+      if (phaseIdxInProject === -1) return 0
+
+      const raw = p.plannedProjectDays[phaseIdxInProject]
+      const val = Number(raw ?? 0)
       return Number.isNaN(val) ? 0 : val
     })
     const rowTotal = perProject.reduce((s, v) => s + v, 0)
