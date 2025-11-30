@@ -420,8 +420,18 @@ function disposeCharts() {
 // Update pie + bar + skill charts
 // ---------------------------------------------------------
 function updateCharts() {
-  if (!projects.value.length) return
+  // 1) 先确保实例存在（否则没法 clear / setOption）
   initCharts()
+
+  // 2) 没有项目 或 没有 phase → 清空三个图，然后退出
+  if (!projects.value.length || !phaseIndices.value.length) {
+    pieChart && pieChart.clear()
+    barChart && barChart.clear()
+    skillChart && skillChart.clear()
+    return
+  }
+
+  // 3) 有数据 → 正常画图
 
   // --- Pie: Project Days per Project ---
   if (pieChart) {
@@ -638,11 +648,10 @@ watch(
 /* Charts */
 .chart-box {
   width: 100%;
-  height: 260px;
+  height: 280px;
 }
-
 .skill-chart {
-  margin-top: 0.5rem;
+  height: 320px;
 }
 
 /* Goals table tweaks */

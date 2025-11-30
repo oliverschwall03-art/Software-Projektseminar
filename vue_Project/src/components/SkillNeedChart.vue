@@ -78,7 +78,7 @@
  */
 
 import { computed } from 'vue'
-import { useProjectsStore } from '@/stores/projects.js'
+import { useProjectsStore } from '@/stores/projects'
 import { storeToRefs } from 'pinia'
 import VChart from 'vue-echarts'
 
