@@ -9,3 +9,4 @@
   "usage": "Basically, you have to fill in cells with a grey background (exception: Gantt chart in the project view). However, you will receive detailed explanations at the appropriate place.",
   "suitability": "The tool is particularly suitable for waterfall projects, where project phases can be clearly defined. If you have an agile project, you can still use the skills module. Then simply fill out the questions in the project view (step 3) for your entire project and not for the individual phase."
 }
+
