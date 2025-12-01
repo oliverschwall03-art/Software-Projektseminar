@@ -450,6 +450,30 @@ watch(
   { immediate: true }
 )
 
+// Keep plannedProjectDays aligned with number of phases
+watch(
+  () => project.value?.phases?.length,
+  (newLen) => {
+    if (!project.value) return
+    if (!Array.isArray(project.value.plannedProjectDays))
+      project.value.plannedProjectDays = []
+
+    const len = project.value.plannedProjectDays.length
+
+    // Add missing entries
+    if (newLen > len) {
+      for (let i = len; i < newLen; i++) {
+        project.value.plannedProjectDays.push(null)
+      }
+    }
+    // Remove extra entries
+    else if (newLen < len) {
+      project.value.plannedProjectDays.splice(newLen)
+    }
+  },
+  { immediate: true }
+)
+
 
 // AVERAGE CALCULATION ====================================================
 // Compute average of an array of rating values, ignoring null/empty values
