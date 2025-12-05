@@ -152,9 +152,32 @@
                 <!-- Chart background rectangle -->
                 <rect x="10" y="5" width="80" height="80" class="chart-area" />
 
-                <!-- Grid lines (horizontal + vertical) -->
-                <line x1="10" y1="45" x2="90" y2="45" class="chart-grid" />
-                <line x1="50" y1="5" x2="50" y2="85" class="chart-grid" />
+                <!-- 更细的网格：评分 1–5 的横线 & 竖线 -->
+                <!-- vertical grid for Exploration (x) -->
+                <g class="grid-group">
+                  <line
+                      v-for="t in [1,2,3,4,5]"
+                      :key="'vx-' + t"
+                      :x1="scaleX(t)"
+                      y1="5"
+                      :x2="scaleX(t)"
+                      y2="85"
+                      class="chart-grid"
+                  />
+                </g>
+
+                <!-- horizontal grid for Exploitation (y) -->
+                <g class="grid-group">
+                  <line
+                      v-for="t in [1,2,3,4,5]"
+                      :key="'hy-' + t"
+                      x1="10"
+                      :y1="scaleY(t)"
+                      x2="90"
+                      :y2="scaleY(t)"
+                      class="chart-grid"
+                  />
+                </g>
 
                 <!-- Axis labels -->
                 <text x="50" y="98" text-anchor="middle" class="chart-label">
@@ -162,36 +185,132 @@
                 </text>
 
                 <text
-                  x="4"
-                  y="45"
-                  text-anchor="middle"
-                  class="chart-label"
-                  transform="rotate(-90 4 45)"
+                    x="4"
+                    y="45"
+                    text-anchor="middle"
+                    class="chart-label"
+                    transform="rotate(-90 4 45)"
                 >
                   Exploitation
                 </text>
 
+                <!-- X ticks -->
+                <g class="axis-ticks">
+                  <g
+                      v-for="t in [1,2,3,4,5]"
+                      :key="'xt-' + t"
+                  >
+                    <text
+                        :x="scaleX(t)"
+                        y="88"
+                        text-anchor="middle"
+                        class="tick-label"
+                    >
+                      {{ t }}
+                    </text>
+                  </g>
+                </g>
+
+                <!-- Y ticks -->
+                <g class="axis-ticks">
+                  <g
+                      v-for="t in [1,2,3,4,5]"
+                      :key="'yt-' + t"
+                  >
+                    <text
+                        x="8"
+                        :y="scaleY(t) + 1"
+                        text-anchor="end"
+                        class="tick-label"
+                    >
+                      {{ t }}
+                    </text>
+                  </g>
+                </g>
+
+                <!-- 如果还没有任何有效点，显示提示文本 -->
+                <text
+                    v-if="!phasePoints.some(p => p.x != null && p.y != null && !Number.isNaN(p.x) && !Number.isNaN(p.y))"
+                    x="50"
+                    y="50"
+                    text-anchor="middle"
+                    class="chart-empty-text"
+                >
+                  Please rate the phases below to see the chart.
+                </text>
+
                 <!-- Phase points (one per project phase) -->
                 <g v-for="p in phasePoints" :key="p.index">
-                  <!-- Dot -->
+                  <!-- Dot：颜色根据 phase index 变化 + hover 高亮 -->
                   <circle
-                    class="phase-dot"
-                    :cx="scaleX(p.x)"
-                    :cy="scaleY(p.y)"
-                    r="2.2"
-                  />
+                      :class="['phase-dot', { 'phase-dot--active': hoverIndex === p.index }]"
+                      :cx="scaleX(p.x)"
+                      :cy="scaleY(p.y)"
+                      :r="hoverIndex === p.index ? 3 : 2.4"
+                      :fill="phaseColor(p.index)"
+                      @mouseenter="hoverIndex = p.index"
+                      @mouseleave="hoverIndex = null"
+                  >
+                    <!-- 原生 tooltip：显示两列平均值 -->
+                    <title>
+                      Phase {{ p.index }}
+                      &#10;Exploration: {{ p.x != null && !Number.isNaN(p.x) ? p.x.toFixed(2) : '–' }}
+                      &#10;Exploitation: {{ p.y != null && !Number.isNaN(p.y) ? p.y.toFixed(2) : '–' }}
+                    </title>
+                  </circle>
                   <!-- Label next to the dot -->
                   <text
-                    class="chart-point-label"
-                    :x="scaleX(p.x) + 3"
-                    :y="scaleY(p.y) - 2"
+                      class="chart-point-label"
+                      :x="scaleX(p.x) + (p.x >= 3 ? 3 : -3)"
+                      :y="scaleY(p.y) + (p.y >= 3 ? -3 : 5)"
+                      text-anchor="middle"
                   >
                     {{ p.index }}
                   </text>
+
                 </g>
 
+
               </svg>
-            </div>
+
+              <!-- Hover 信息面板 -->
+              <div v-if="hoveredPhase" class="chart-tooltip-panel small mt-1">
+                <strong>Phase {{ hoveredPhase.index }}</strong>
+                &nbsp;·&nbsp;
+                Exploration:
+                {{
+                  hoveredPhase.x != null && !Number.isNaN(hoveredPhase.x)
+                      ? hoveredPhase.x.toFixed(2)
+                      : "–"
+                }}
+                &nbsp;·&nbsp;
+                Exploitation:
+                {{
+                  hoveredPhase.y != null && !Number.isNaN(hoveredPhase.y)
+                      ? hoveredPhase.y.toFixed(2)
+                      : "–"
+                }}
+              </div>
+
+              <!-- Legend：Phase 1/2/3/... 用颜色区分（正确位置） -->
+              <div class="chart-legend small mt-2">
+  <span
+      v-for="ph in chartLegendPhases"
+      :key="ph.index"
+      class="legend-item"
+  >
+    <span
+        class="legend-dot"
+        :style="{ backgroundColor: phaseColor(ph.index) }"
+    ></span>
+    Phase {{ ph.index }}
+  </span>
+              </div>
+
+            </div> <!-- ⬅️ chart-wrapper 的结束标签，到这里才结束 -->
+
+
+
 
           </div>
         </div>
@@ -362,7 +481,7 @@
 <script setup>
 // IMPORTS ===============================================================
 // Vue reactivity tools
-import { computed, watch } from "vue"
+import { computed, watch, ref } from "vue"
 
 // Router (for reading project ID)
 import { useRoute } from "vue-router"
@@ -508,6 +627,45 @@ const phasePoints = computed(() => {
   })
 })
 
+// Hover 状态：当前鼠标悬停在哪个 phase 点上
+const hoverIndex = ref(null)
+const hoveredPhase = computed(() => {
+  if (hoverIndex.value == null) return null
+  return phasePoints.value.find(p => p.index === hoverIndex.value) || null
+})
+
+
+
+// 给不同 Phase 着色的调色板（最多 6 个 phase，循环使用）
+// 给不同 Phase 着色的调色板（颜色会循环使用）
+const PHASE_COLORS = [
+  "#0d6efd", // 蓝
+  "#ec4899", // 粉
+  "#22c55e", // 绿
+  "#f97316", // 橙
+  "#8b5cf6", // 紫
+  "#14b8a6", // 青
+  "#eab308", // 黄
+  "#f43f5e", // 红
+  "#6366f1", // 靛
+  "#10b981"  // 深绿
+]
+
+function phaseColor(phaseIndex) {
+  if (!phaseIndex && phaseIndex !== 0) return "#6b7280"
+  const i = (Number(phaseIndex) - 1 + PHASE_COLORS.length) % PHASE_COLORS.length
+  return PHASE_COLORS[i]
+}
+
+// Legend 用：按 index 排序的一份 phase 列表
+const chartLegendPhases = computed(() => {
+  if (!project.value?.phases) return []
+  return [...project.value.phases]
+      .filter(p => p && p.index != null)
+      .sort((a, b) => a.index - b.index)
+})
+
+
 // Chart rating range (1–5)
 const minRating = 0
 const maxRating = 5
@@ -616,32 +774,70 @@ function skillList(index, type) {
 /* Chart area background */
 .chart-area {
   fill: #ffffff;
-  stroke: #e0e0e0;
+  stroke: #d4d4d8;
+  stroke-width: 0.6;
 }
 
 /* Grid lines */
 .chart-grid {
-  stroke: #e0e0e0;
-  stroke-dasharray: 2 3;
-  stroke-width: 0.5;
+  stroke: #e5e7eb;
+  stroke-dasharray: 2 2;
+  stroke-width: 0.4;
 }
 
 /* Axis text labels */
 .chart-label {
   font-size: 3px;
-  fill: #555;
+  fill: #4b5563;
 }
 
-/* Phase dot styling */
-.phase-dot {
-  fill: #0d6efd;
+/* Tick labels */
+.tick-label {
+  font-size: 2.6px;
+  fill: #6b7280;
 }
+
+
+
+/* Phase dot styling：只定义边框，填充颜色由 :fill 控制 */
+.phase-dot {
+  stroke: #ffffff;
+  stroke-width: 0.7;
+  transition: r 0.15s ease-out;
+}
+
+/* Hover 时高亮一点 */
+.phase-dot--active {
+  filter: drop-shadow(0 0 1px rgba(15, 23, 42, 0.5));
+}
+
 
 /* Dot label */
 .chart-point-label {
   font-size: 3px;
-  fill: #333;
+  fill: #374151;
 }
+
+/* Legend */
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center; /* 居中 legend */
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+
 
 /* Small form controls */
 .form-select-sm,
@@ -653,5 +849,19 @@ function skillList(index, type) {
   text-align: left !important;
   padding-left: 1.25rem;
 }
+
+.chart-empty-text {
+  font-size: 3px;
+  fill: #9ca3af;
+}
+
+.chart-tooltip-panel {
+  text-align: center;
+  color: #374151;
+}
+.chart-tooltip-panel strong {
+  font-weight: 600;
+}
+
 
 </style>
