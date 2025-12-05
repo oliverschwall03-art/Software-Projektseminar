@@ -765,11 +765,28 @@ function skillList(index, type) {
   max-width: 480px;
 }
 
-/* SVG chart responsive sizing */
-.ambi-chart {
-  width: 100%;
-  height: auto;
+/* Chart container */
+.chart-wrapper {
+  max-width: 480px;
 }
+
+/* 让 SVG 外层保持 1:1 比例的自适应盒子 */
+.chart-responsive {
+  position: relative;
+  width: 100%;
+  padding-top: 100%; /* 高度 = 宽度，形成正方形 */
+  overflow: hidden;
+}
+
+/* 让 SVG 填满这个正方形盒子 */
+.chart-responsive .ambi-chart {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
 
 /* Chart area background */
 .chart-area {
