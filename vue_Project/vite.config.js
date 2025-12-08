@@ -6,7 +6,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/Software-Projektseminar/tree/main/vue_Project',
+  base: '/Software-Projektseminar/',
   plugins: [
     vue(),
     vueDevTools(),
