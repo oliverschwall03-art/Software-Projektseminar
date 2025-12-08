@@ -1,4 +1,4 @@
-Project Planning & Skill Management Tool (Vue.js)
+# Project Planning & Ambidexterity/Skill Management Tool (Vue.js)
 
 A web-based application developed as part of the Software Project Seminar at the University of Bayreuth.
 The tool supports efficient project planning, team skill assessment, and visual project structuring.
