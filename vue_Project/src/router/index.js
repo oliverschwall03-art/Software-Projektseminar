@@ -1,4 +1,5 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
+
 
 /*
   Lazy-loaded route components
@@ -25,7 +26,7 @@ const ProjectSettings      = () => import('@/views/project/ProjectSettings.vue')
 */
 export default createRouter({
   // Use browser history API (clean URLs without #hash)
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHashHistory(),
 
   // All available routes in the application
   routes: [
